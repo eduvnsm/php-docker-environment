@@ -1,0 +1,40 @@
+version: '3'
+services:
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: test_db
+      MYSQL_USER: test
+      MYSQL_PASSWORD: secret
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+      - "./db:/docker-entrypoint-initdb.d"
+    networks:
+      - php-docker
+  www:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - "./:/var/www/html"
+    ports:
+      - 8081:80
+      - 443:443
+    depends_on:
+      - db
+    networks:
+      - php-docker
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8090:80
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+    depends_on:
+      - db
+    networks:
+      - php-docker
+networks:
+  php-docker:
+    driver: bridge
